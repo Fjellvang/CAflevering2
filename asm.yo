@@ -1,0 +1,53 @@
+0x000: 30f40002             | 	irmovq stack,%rsp
+0x004: 800e00000000000000   | 	call start
+0x00d: 00                   | 	halt
+0x00e:                      | start:
+0x00e: 30fb0000             | 	irmovq $0,%r11		# i = 0
+0x012: 30fe0100             | 	irmovq $1,%r14 	# værdi til at decrementere counts.
+0x016: 30f30800             | 	irmovq $8,%rbx 	# værdi til at indexere array
+0x01a: 30f70400             | 	irmovq 4,%rdi #len=4 til rdi
+0x01e: 61e7                 | 	subq %r14,%rdi 	# sæt len til len-1
+0x020: 30f62800             | 	irmovq array,%rsi #array til rsi
+0x024: 708000               | 	jmp while1
+                            | 
+                            | #array of 4 elements:
+0x028:                      | 	.align 8
+0x028: 1000000000000000     | array:  .quad 0x000000000010
+0x030: 0900000000000000     | 	.quad 0x000000000009
+0x038: 0800000000000000     | 	.quad 0x000000000008
+0x040: 0700000000000000     | 	.quad 0x000000000007
+0x048:                      | L4:
+0x048: 50860000             | 	mrmovq (%rsi),%r8       # smid A[j] i R8
+0x04c: 2081                 | 	rrmovq %r8,%rcx		# smid r8 i en tempj
+0x04e: 50260800             | 	mrmovq 8(%rsi),%rdx	# smid A[i+1] i RDX
+0x052: 2029                 | 	rrmovq %rdx,%r9		# smid A[i+1] i tempj+1
+0x054: 6191                 | 	subq %r9,%rcx          # A[j+1] - A[j]
+0x056: 716100               | 	jle L3			# jump hvis det 0 eller negativ, for så skal vi ik swap
+0x059: 40260000             | 	rmmovq %rdx,(%rsi) 	# de er forskellige så de skal swappes
+0x05d: 40860800             | 	rmmovq %r8,8(%rsi) 
+0x061:                      | L3:
+0x061: 6036                 | 	addq %rbx,%rsi 	# næste array element.
+0x063: 60e0                 | 	addq %r14,%rax 	# j++;
+0x065: 207c                 | 	rrmovq %rdi,%r12 #len til temp
+0x067: 610c                 | 	subq %rax,%r12
+0x069: 747900               | 	jne L5
+0x06c: 60eb                 | 	addq %r14,%r11		#i+1
+0x06e: 30f62800             | 	irmovq array,%rsi	#sæt array til starten af arrayet.
+0x072: 708000               | 	jmp while1		# hop til while 1, eller får vi en uendelig lykke
+0x075:                      | L6:
+0x075: 30f00000             | 	irmovq $0,%rax		# initializer j=0
+0x079:                      | L5:
+0x079: 20ac                 | 	rrmovq %r10,%r12	#flyt len til temp for at sammenligne
+0x07b: 610c                 | 	subq %rax,%r12		# træk j fra temp, for at sætte CC's
+0x07d: 744800               | 	jne L4
+0x080:                      | while1:
+0x080: 207a                 | 	rrmovq %rdi,%r10	# len til r10
+0x082: 20ac                 | 	rrmovq %r10,%r12 	# len til temp
+0x084: 61bc                 | 	subq %r11,%r12          # i - len, fordi når den er nul så er vi færdige... ik?
+0x086: 747500               | 	jne L6			# når nul-flag og sign-flag ikke er sat, må vi jumpe.'
+0x089: 30f00500             | 	irmovq $5,%rax
+0x08d: 90                   | 	ret
+                            | /* $end asm.ys */	
+                            | 
+0x200:                      | 	.pos 0x200
+0x200:                      | stack:
